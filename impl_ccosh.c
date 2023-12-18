@@ -26,18 +26,27 @@ uint8_t ccosh_global[] = {
 	0x00,   0x00,   0x00,   0x00,   0x00,   0x00,   0x10,   0x00,
 	0x00,   0x00,   0x00,   0x00,   0x00,   0x00,   0xf0,   0x4f
 };
+
 double ccosh_const0 = *(double *)(ccosh_global + 2); // 134217729
 double ccosh_const1 = *(double *)(ccosh_global); // ?
+double ccosh_const2 = (double)0x7FE0000000000000;
 
-void path1(double x, double y, double *res_x, double *res_y) {
-	// stack variable
-	double cosh_res[2]; // off 0x0
-	double sinh_res[2]; // off 0x10
-	double sin_y, cos_y; // off 0x30, 0x38
-
+static inline void ccosh_path1(double x, double y, double *res_x, double *res_y) {
+	int y_nan_infinite = ((*(uint64 *)&y) >> 52U) == 0x7ff;   
+	double t1, t2;
+	t1 = ccosh_const2 * ccosh_const2;	
+	t2 = cos(y) * t1;
+	t1 *= x;
+	if (y_nan_infinite) {
+		t2 *= y;
+	} else {
+		t2 *= sin(y);	
+	}
+	*res_x = t1;
+	*res_y = t2;
 }
 
-void path2(double x, double y, double *res_x, double *res_y) {
+static void ccosh_path2(double x, double y, double *res_x, double *res_y) {
 	// stack variable
 	double cosh_res[2]; // off 0x0
 	double sinh_res[2]; // off 0x10
@@ -117,7 +126,7 @@ void path2(double x, double y, double *res_x, double *res_y) {
 	}
 }
 
-void path3(int cos, double x, double y, double *res_x, double *res_y) {
+static void ccosh_path3(int cos, double x, double y, double *res_x, double *res_y) {
 	// stack variable
 	double cosh_res[2]; // off 0x0
 	double sinh_res[2]; // off 0x10
@@ -125,24 +134,46 @@ void path3(int cos, double x, double y, double *res_x, double *res_y) {
 
 }
 
-void path4(double x, double y, double *res_x, double *res_y) {
-	// stack variable
-	double cosh_res[2]; // off 0x0
-	double sinh_res[2]; // off 0x10
-	double sin_y, cos_y; // off 0x30, 0x38
-
+static inline void ccosh_path4(double x, double y, double *res_x, double *res_y) {
+	int y_nan_infinite = ((*(uint64 *)&y) >> 52U) == 0x7ff;   
+	double t1, t2;
+	t1 = cosh(x) * cos(y);
+	if (y_nan_infinite) {
+		t2 = sinh(x) * y;
+	} else {
+		t2 = sinh(x) * sin(y);
+	}
+	*res_x = t1;
+	*res_y = t2;
 }
 
-void path5(double x, double y, double *res_x, double *res_y) {
-	// stack variable
-	double cosh_res[2]; // off 0x0
-	double sinh_res[2]; // off 0x10
-	double sin_y, cos_y; // off 0x30, 0x38
+static void ccosh_path5(double x, double y, double *res_x, double *res_y) {
+	int x_nan_infinite = ((*(uint64 *)&x) >> 52U) == 0x7ff;   
+	int con1 = ((x >> (32U)) & 0xfffff) != 0;
+	int con2 = (x & 0xffffffff) != 0;
 
+	double t1, t2;
+	t1 = cosh(x);
+	t2 = y;
+	if (!x_nan_infinite || (x_nan_infinite && !con1 && !con2)) {
+		uint8_t al, dl, cl;
+		dl = t2 & 0xff; 
+		al = t1 & 0xff;
+		cl = dl;
+		cl &= 0x7f;
+		dl >>= 7;	
+		al >>= 7;	
+		dl ^= al;
+		dl >>= 7;
+		cl |= dl;
+		t2 = (t2 & (0xffffffffffffff)) | cl;
+	}
+	*res_x = t1;
+	*res_y = t2;
 }
 
-// in = x + yi
-// cosh(x+yi) = cosh(x)cos(y)+isinh(x)sin(y)
+// in = x + iy
+// cosh(x + yi) = cosh(x)cos(y) + isinh(x)sin(y)
 double complex _ccosh(double complex in) 
 {
 	double res_x, res_y; // off 0x40, 0x48
@@ -173,44 +204,44 @@ double complex _ccosh(double complex in)
 		if (con1 && !con2 && !con3) {
 			if (!con4) {
 				if (!con7) {
-					path3(1, x, y, &res_x, &res_y);
+					ccosh_path3(1, x, y, &res_x, &res_y);
 				} else {
-					path4(x, y, &res_x, &res_y);
+					ccosh_path4(x, y, &res_x, &res_y);
 				}
 			} else {
 				if (!con10 && !con8) {
-					path5(x, y, &res_x, &res_y);
+					ccosh_path5(x, y, &res_x, &res_y);
 				} else {
-					path4(x, y, &res_x, &res_y);
+					ccosh_path4(x, y, &res_x, &res_y);
 				}
 			}
 		} else {
 			if (!con6) {
 				if (con4 && !con10 && !con8) {
-					path4(x, y, &res_x, &res_y);
+					ccosh_path4(x, y, &res_x, &res_y);
 				} else {
 					if (con9) {
-						path1(x, y, &res_x, &res_y);
+						ccosh_path1(x, y, &res_x, &res_y);
 					} else {
-						path2(x, y, &res_x, &res_y);
+						ccosh_path2(x, y, &res_x, &res_y);
 					}
 				}
 			} else {
-				path3(1, x, y, &res_x, &res_y);
+				ccosh_path3(1, x, y, &res_x, &res_y);
 			}
 		}
 	} else {
 		if (!con5) {
 			if (!con10 && !con8) {
-				path5(x, y, &res_x, &res_y);
+				ccosh_path5(x, y, &res_x, &res_y);
 			} else {
-				path4(x, y, &res_x, &res_y);
+				ccosh_path4(x, y, &res_x, &res_y);
 			}
 		} else {
 			if (!con7) {
-				path3(0, x, y, &res_x, &res_y);
+				ccosh_path3(0, x, y, &res_x, &res_y);
 			} else {
-				path4(x, y, &res_x, &res_y);
+				ccosh_path4(x, y, &res_x, &res_y);
 			}
 		}
 	}
