@@ -8,8 +8,8 @@
 #define DLL_FILE_NAME "/usr/lib64/libimf.so"
 
 typedef void (*sincos_k64)(double in, double complex *sin, double complex *cos);
-typedef void (*sinh_k64)(double in, double complex *res);
-typedef void (*cosh_k64)(double in, double complex *res);
+typedef int (*sinh_k64)(double in, double complex *res);
+typedef int (*cosh_k64)(double in, double complex *res);
 typedef void (*mul_k64)(uint32_t in, double complex *a, double complex *b, double *res);
 
 sincos_k64 __libm_sincos_k64 = NULL;
@@ -53,31 +53,29 @@ static void ccosh_path2(double complex in, double complex *res) {
 	double t0, t1, t2, t3, t4, t5, t6;
 	uint32_t x_exp = DOUBLE_EXP(x);
 	uint32_t y_exp = DOUBLE_EXP(y);
-	uint32_t ebp, ebx;
+	int ebp, ebx, cosh_ret;
 	// stack variable
 	double cosh_res[2]; 
 	double sinh_res[2]; 
 	double sincos_res[4]; 
 
-	__libm_cosh_k64(x, (double complex *)cosh_res);
-	printf("cosh_res is %6lf + %6lfi\n", cosh_res[0], cosh_res[1]);
+	cosh_ret = __libm_cosh_k64(x, (double complex *)cosh_res);
 	t0 = t5 = cosh_res[0];
 	t4 = cosh_res[1];
 	t5 += t4;
 	t3 = t5 * UINT64_TO_DOUBLE(ccosh_const0);
-	t1 = t0 - t5;
-	t4 = t1 - t4;
-	t2 = t5 - t3;
-	t3 = t2 - t3;
-	t5 = t3 - t5;
+	t1 = t5 - t0;
+	t4 = t4 - t1;
+	t2 = t3 - t5;
+	t3 = t3 - t2;
+	t5 = t5 - t3;
 	cosh_res[0] = t3;
-	t5 = t4 - t5;
+	t5 = t5 - t4;
 	cosh_res[1] = t5;
 
-	if (x_exp >= 0x3370) {
-		__libm_sinh_k64(x, (double complex *)sinh_res);
+	if (x_exp >= 0x337) {
+		ebp = __libm_sinh_k64(x, (double complex *)sinh_res);
 		t5 = sinh_res[1];
-		ebp = x_exp;
 	} else {
 		t0 = x * UINT64_TO_DOUBLE(ccosh_const1);
 		uint32_t t0_exp	= DOUBLE_EXP(t0);		
@@ -91,34 +89,34 @@ static void ccosh_path2(double complex in, double complex *res) {
 		t5 = 0;
 	}
 
-	t4 = t5 + sinh_res[0];
+	t0 = sinh_res[0];
+	t4 = t5 + t0;
 	t3 = t4 * UINT64_TO_DOUBLE(ccosh_const0);
-	t1 = t0 - t4;
-	t2 = t4 - t3;
-	t5 = t1 - t5;
-	t3 = t2 - t3;
+	t1 = t4 - t0;
+	t2 = t3 - t4;
+	t5 = t5 - t1;
+	t3 = t3 - t2;
 	sinh_res[0] = t3;
-	t4 = t3 - t4;
+	t4 = t4 - t3;
 	t5 += t4;
 	sinh_res[1] = t5;
 	__libm_sincos_k64(y, (double complex *)sincos_res, (double complex *)(sincos_res + 2));
-	printf("sin is %6lf + %6lfi, cos is %6lf + %6lfi\n", sincos_res[0], sincos_res[1], sincos_res[2], sincos_res[3]);
 	t0 = sincos_res[2];
 	t4 = sincos_res[3];
 	t3 = t0 + t4;
 	t6 = t3 * UINT64_TO_DOUBLE(ccosh_const0);
-	t1 = t0 - t3;
-	t4 = t1 - t4;
-	t2 = t3 - t6;
+	t1 = t3 - t0;
+	t4 = t4 - t1;
+	t2 = t6 - t3;
 	t5 = UINT64_TO_DOUBLE(ccosh_const3);
-	t6 = t2 - t6;
-	t3 = t6 - t3;
+	t6 = t6 - t2;
+	t3 = t3 - t6;
 	t6 += t5;
 	t4 += t3;
 	sincos_res[3] = t4;
 	sincos_res[2] = t6;
 
-	if (y_exp < 0x3370) {
+	if (y_exp < 0x337) {
 		t0 = y * UINT64_TO_DOUBLE(ccosh_const4);
 		uint32_t t0_exp	= DOUBLE_EXP(t0);		
 		ebx = t0_exp;
@@ -139,17 +137,15 @@ static void ccosh_path2(double complex in, double complex *res) {
 	t3 = UINT64_TO_DOUBLE(ccosh_const0);
 	t4 += t0;
 	t3 *= t4;
-	t1 = t0 - t4;
-	t5 = t1 - t5;
-	t2 = t4 - t3;
-	t3 = t2 - t3;
+	t1 = t4 - t0;
+	t5 = t5 - t1;
+	t2 = t3 - t4;
+	t3 = t3 - t2;
 	sincos_res[0] = t3;
-	t4 = t3 - t4;
+	t4 = t4 - t3;
 	t5 += t4;
 	sincos_res[1] = t5;
-	printf("y_exp: %6lf, ebp: %6lf\n", y_exp, ebp);
-	printf("cosh_res: %6lf + %6lfi, sinh_res: %6lf + %6lfi\n", cosh_res[0], cosh_res[1], sinh_res[0], sinh_res[1]);
-	__libm_mul_k64(y_exp, (double complex *)cosh_res, (double complex *)(sincos_res + 2), &res_x);
+	__libm_mul_k64(cosh_ret, (double complex *)cosh_res, (double complex *)(sincos_res + 2), &res_x);
 	__libm_mul_k64(ebp + ebx, (double complex *)sinh_res, (double complex *)sincos_res, &res_y);
 	*res = res_x + res_y * I;
 }

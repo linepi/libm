@@ -16,11 +16,12 @@ int main() {
     sincos_k64 = (void (*)(double, double *, double *))((uint64_t)dlsym(handle, "__acosdq") + __sincos_k64_off - __acosdq_off);
 
     // 调用函数
-    double angle = M_PI/2, sin_val, cos_val, a, b;
-    sincos_k64(angle, &sin_val, &cos_val);
+    double angle = 2; 
+    double sin_val[2], cos_val[2];
+    sincos_k64(angle, sin_val, cos_val);
 
     // 使用返回的值...
-    printf("sin(%f) = %f, cos(%f) = %f\n", angle, sin_val, angle, cos_val);
+    printf("sin(%f) = %f + %fi, cos(%f) = %f + %fi\n", angle, sin_val[0], sin_val[1], angle, cos_val[0], cos_val[1]);
 
     // 清理
     dlclose(handle);
