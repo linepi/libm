@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "common.h"
+#include "macro.h"
 
 #define DLL_FILE_NAME "/usr/lib64/libimf.so"
 
@@ -63,9 +63,9 @@ int main() {
 
 				if (rreal != rreal2 || rimag != rimag2) {
 					fail_cnt++;
-					printf("for 0x%lx + 0x%lxi: \nccosh = 0x%lx + 0x%lxi != \n_ccosh = 0x%lx + 0x%lxi\n", 
-						temp_real, temp_imag, rreal, rimag, rreal2, rimag2);
-					goto end;
+					// printf("for 0x%lx + 0x%lxi: \nccosh = 0x%lx + 0x%lxi != \n_ccosh = 0x%lx + 0x%lxi\n", 
+					// 	temp_real, temp_imag, rreal, rimag, rreal2, rimag2);
+					// goto end;
 				} else {
 					suc_cnt++;
 				}
@@ -98,9 +98,9 @@ int main() {
 
 		if (rreal != rreal2 || rimag != rimag2) {
 			fail_cnt++;
-			printf("for 0x%lx + 0x%lxi: \nccosh = 0x%lx + 0x%lxi != \n_ccosh = 0x%lx + 0x%lxi\n", 
-				DOUBLE_UINT64(xreal), DOUBLE_UINT64(ximag), rreal, rimag, rreal2, rimag2);
-			goto end;
+			// printf("for 0x%lx + 0x%lxi: \nccosh = 0x%lx + 0x%lxi != \n_ccosh = 0x%lx + 0x%lxi\n", 
+			// 	DOUBLE_UINT64(xreal), DOUBLE_UINT64(ximag), rreal, rimag, rreal2, rimag2);
+			// goto end;
 		} else {
 			suc_cnt++;
 		}

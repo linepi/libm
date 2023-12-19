@@ -1,4 +1,4 @@
-#include "common.h"
+#include "macro.h"
 #include <complex.h>
 #include <dlfcn.h>
 #include <math.h>
@@ -6,16 +6,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int __libm_cosh_k64(double input,double* result);
+int __libm_sinh_k64(double input,double* result);
+void  __libm_mul_k64(int a1, double* a2, double* a3, double* a4);
+
 typedef void (*sincos_k64)(double in, double complex *sin, double complex *cos);
 typedef int (*sinh_k64)(double in, double complex *res);
 typedef int (*cosh_k64)(double in, double complex *res);
-typedef void (*mul_k64)(int in, double complex *a, double complex *b,
-                        double *res);
+typedef void (*mul_k64)(int in, double complex *a, double complex *b, double *res);
 
-sincos_k64 __libm_sincos_k64 = NULL;
-sinh_k64 __libm_sinh_k64 = NULL;
-cosh_k64 __libm_cosh_k64 = NULL;
-mul_k64 __libm_mul_k64 = NULL;
+sincos_k64 _libm_sincos_k64 = NULL;
+sinh_k64 _libm_sinh_k64 = NULL;
+cosh_k64 _libm_cosh_k64 = NULL;
+mul_k64 _libm_mul_k64 = NULL;
 
 uint64_t ccosh_const0 = 0x41A0000002000000;
 uint64_t ccosh_const1 = 0x4FF0000002000000;
@@ -54,7 +57,7 @@ static void ccosh_path2(double complex in, double complex *res)
     double sinh_res[2];
     double sincos_res[4];
 
-    cosh_ret = __libm_cosh_k64(x, (double complex *)cosh_res);
+    cosh_ret = _libm_cosh_k64(x, (double complex *)cosh_res);
     t0 = t5 = cosh_res[0];
     t4 = cosh_res[1];
     t5 += t4;
@@ -69,7 +72,7 @@ static void ccosh_path2(double complex in, double complex *res)
     cosh_res[1] = t5;
 
     if (x_exp >= 0x337) {
-        ebp = __libm_sinh_k64(x, (double complex *)sinh_res);
+        ebp = _libm_sinh_k64(x, (double complex *)sinh_res);
         t5 = sinh_res[1];
     } else {
         t0 = x * UINT64_TO_DOUBLE(ccosh_const4);
@@ -94,7 +97,7 @@ static void ccosh_path2(double complex in, double complex *res)
     t4 = t4 - t3;
     t5 += t4;
     sinh_res[1] = t5;
-    __libm_sincos_k64(y, (double complex *)sincos_res,
+    _libm_sincos_k64(y, (double complex *)sincos_res,
                       (double complex *)(sincos_res + 2));
     t0 = sincos_res[2];
     t4 = sincos_res[3];
@@ -139,9 +142,9 @@ static void ccosh_path2(double complex in, double complex *res)
     t4 = t4 - t3;
     t5 += t4;
     sincos_res[1] = t5;
-    __libm_mul_k64(cosh_ret, (double complex *)cosh_res,
+    _libm_mul_k64(cosh_ret, (double complex *)cosh_res,
                    (double complex *)(sincos_res + 2), &res_x);
-    __libm_mul_k64(ebp + ebx, (double complex *)sinh_res,
+    _libm_mul_k64(ebp + ebx, (double complex *)sinh_res,
                    (double complex *)sincos_res, &res_y);
     *res = res_x + res_y * I;
 }
@@ -243,11 +246,10 @@ double complex _ccosh(double complex in)
         uint64_t mul_k64_off = 0x94820;
         uint64_t sinh_k64_off = 0x8f600;
         uint64_t cosh_k64_off = 0x8fa30;
-        __libm_sincos_k64 =
-            (sincos_k64)(acosdq_actual_off + sincos_k64_off - acosdq_off);
-        __libm_mul_k64 = (mul_k64)(acosdq_actual_off + mul_k64_off - acosdq_off);
-        __libm_cosh_k64 = (cosh_k64)(acosdq_actual_off + cosh_k64_off - acosdq_off);
-        __libm_sinh_k64 = (sinh_k64)(acosdq_actual_off + sinh_k64_off - acosdq_off);
+        _libm_sincos_k64 = (sincos_k64)(acosdq_actual_off + sincos_k64_off - acosdq_off);
+        _libm_mul_k64 = (mul_k64)(acosdq_actual_off + mul_k64_off - acosdq_off);
+        _libm_cosh_k64 = (cosh_k64)(acosdq_actual_off + cosh_k64_off - acosdq_off);
+        _libm_sinh_k64 = (sinh_k64)(acosdq_actual_off + sinh_k64_off - acosdq_off);
         init = 1;
     }
 
@@ -265,16 +267,14 @@ double complex _ccosh(double complex in)
     int con9 = x_exp < 0x40a;
 
     int con4 = y_exp == 0;
-    int con5 = y_exp != 0;
     int con6 = y_exp == 0x7ff;
-    int con7 = y_exp != 0x7ff;
     int con8 = DOUBLE_LOW32(y) != 0;
     int con10 = DOUBLE_32to51(y) != 0;
 
     if (!con0) {
         if (con1 && !con2 && !con3) {
             if (!con4) {
-                if (!con7) {
+                if (con6) {
                     ccosh_path3(1, in, &res);
                 } else {
                     ccosh_path4(in, &res);
@@ -302,14 +302,14 @@ double complex _ccosh(double complex in)
             }
         }
     } else {
-        if (!con5) {
+        if (con4) {
             if (!con10 && !con8) {
                 ccosh_path5(in, &res);
             } else {
                 ccosh_path4(in, &res);
             }
         } else {
-            if (!con7) {
+            if (con6) {
                 ccosh_path3(0, in, &res);
             } else {
                 ccosh_path4(in, &res);

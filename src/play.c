@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "common.h"
+#include "macro.h"
 
 #define DLL_FILE_NAME "/usr/lib64/libimf.so"
 double complex _ccosh(double complex in);
