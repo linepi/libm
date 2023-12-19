@@ -17,7 +17,8 @@ int main()
 
 	uint64_t real = 0x80000f1c2a57e878;
 	uint64_t imag = 0x73b408df054cc2ef;
-	double complex a = __builtin_complex(UINT64_TO_DOUBLE(real), UINT64_TO_DOUBLE(imag));
+	// double complex a = __builtin_complex(UINT64_TO_DOUBLE(real), UINT64_TO_DOUBLE(imag));
+	double complex a = __builtin_complex(1.0, 2.0);
 	double complex res1 = ccosh(a);
 	double complex res2 = _ccosh(a);
 
