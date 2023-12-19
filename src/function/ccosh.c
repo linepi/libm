@@ -11,14 +11,7 @@ int __libm_sinh_k64(double input,double* result);
 void  __libm_mul_k64(int a1, double* a2, double* a3, double* a4);
 
 typedef void (*sincos_k64)(double in, double complex *sin, double complex *cos);
-typedef int (*sinh_k64)(double in, double complex *res);
-typedef int (*cosh_k64)(double in, double complex *res);
-typedef void (*mul_k64)(int in, double complex *a, double complex *b, double *res);
-
 sincos_k64 _libm_sincos_k64 = NULL;
-sinh_k64 _libm_sinh_k64 = NULL;
-cosh_k64 _libm_cosh_k64 = NULL;
-mul_k64 _libm_mul_k64 = NULL;
 
 uint64_t ccosh_const0 = 0x41A0000002000000;
 uint64_t ccosh_const1 = 0x4FF0000002000000;
@@ -142,14 +135,8 @@ static void ccosh_path2(double complex in, double complex *res)
     t4 = t4 - t3;
     t5 += t4;
     sincos_res[1] = t5;
-    _libm_mul_k64(cosh_ret, (double complex *)cosh_res,
-                   (double complex *)(sincos_res + 2), &res_x);
-    _libm_mul_k64(ebp + ebx, (double complex *)sinh_res,
-                   (double complex *)sincos_res, &res_y);
-    // __libm_mul_k64(cosh_ret, cosh_res,
-    //             (sincos_res + 2), &res_x);
-    // __libm_mul_k64(ebp + ebx, sinh_res,
-    //                sincos_res, &res_y);
+    __libm_mul_k64(cosh_ret, cosh_res, sincos_res + 2, &res_x);
+    __libm_mul_k64(ebp + ebx, sinh_res, sincos_res, &res_y);
     *res = res_x + res_y * I;
 }
 
@@ -247,13 +234,7 @@ double complex _ccosh(double complex in)
         uint64_t acosdq_actual_off = (uint64_t)dlsym(handle, "__acosdq");
         uint64_t acosdq_off = 0x1e460; // __acosdq offset in libimf.so
         uint64_t sincos_k64_off = 0x9c7c0;
-        uint64_t mul_k64_off = 0x94820;
-        uint64_t sinh_k64_off = 0x8f600;
-        uint64_t cosh_k64_off = 0x8fa30;
         _libm_sincos_k64 = (sincos_k64)(acosdq_actual_off + sincos_k64_off - acosdq_off);
-        _libm_mul_k64 = (mul_k64)(acosdq_actual_off + mul_k64_off - acosdq_off);
-        _libm_cosh_k64 = (cosh_k64)(acosdq_actual_off + cosh_k64_off - acosdq_off);
-        _libm_sinh_k64 = (sinh_k64)(acosdq_actual_off + sinh_k64_off - acosdq_off);
         init = 1;
     }
 

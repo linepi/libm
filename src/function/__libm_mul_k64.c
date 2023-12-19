@@ -78,14 +78,14 @@ void  __libm_mul_k64(int a1, double* a2, double* a3, double* a4)
     int16_t value = HIWORD_copy(a2);
     v4 = (value & 0x7FF0) >> 4;
     //储存第一个乘数
-    v5 = *(double*)a2;//xmm3
-    v6 = *(double*)a3;//movsd   xmm7, qword ptr [rsi+8];意义不明
+    v5 = a2[0];//xmm3
+    v6 = a2[1];//movsd   xmm7, qword ptr [rsi+8];意义不明
     //储存第二个乘数
-    v7 = *(double*)a3;//xmm2
-    v8 = *(double*)a4;
+    v7 = a3[0];//xmm2
+    v8 = a3[1];
     //当两个乘数都不是0或inf或nan或无穷，条件为真
     if (v4 != 0x7FF
-        && (v4 || (HIDWORD_copy(&a2) & 0xFFFFF) != 0 || LODWORD_copy(&a2))//指数位与小数位不同时为0
+        && (v4 || (HIDWORD_copy(a2) & 0xFFFFF) != 0 || LODWORD_copy(a2))//指数位与小数位不同时为0
         && (v9 = (HIWORD_copy(&v7) & 0x7FF0) >> 4, v9 != 2047)
         && (v9 || (HIDWORD_copy(&v7) & 0xFFFFF) != 0 || LODWORD_copy(&v7))
         )
@@ -128,7 +128,7 @@ void  __libm_mul_k64(int a1, double* a2, double* a3, double* a4)
         v16 = v11 + v12;
         v17 = content2.z * v16 - (content2.z * v16 - v16);
         v18 = content2.z * (v15 + v14) - (content2.z * (v15 + v14) - (v15 + v14));
-                v19 = ((((v12+v11)-((content2.z*(v12+v11))-((content2.z*(v12+v11))-(v12+v11))))+(v12 - ((v12+v11)-v11)))*(((v15+v14)-((content2.z*(v15+v14))-((content2.z*(v15+v14))-(v15+v14))))+(v15-((v15+v14)-v14))))
+        v19 = ((((v12+v11)-((content2.z*(v12+v11))-((content2.z*(v12+v11))-(v12+v11))))+(v12 - ((v12+v11)-v11)))*(((v15+v14)-((content2.z*(v15+v14))-((content2.z*(v15+v14))-(v15+v14))))+(v15-((v15+v14)-v14))))
         +((((v15+v14)-((content2.z*(v15+v14))-((content2.z*(v15+v14))-(v15+v14))))+(v15-((v15+v14)-v14)))
 *((content2.z*(v12+v11))-((content2.z*(v12+v11))-(v12+v11))))
 +((((v12+v11)-((content2.z*(v12+v11))-((content2.z*(v12+v11))-(v12+v11))))+(v12 - ((v12+v11)-v11)))*((content2.z*(v15+v14))-((content2.z*(v15+v14))-(v15+v14))));

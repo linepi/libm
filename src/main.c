@@ -63,9 +63,9 @@ int main() {
 
 				if (rreal != rreal2 || rimag != rimag2) {
 					fail_cnt++;
-					// printf("for 0x%lx + 0x%lxi: \nccosh = 0x%lx + 0x%lxi != \n_ccosh = 0x%lx + 0x%lxi\n", 
-					// 	temp_real, temp_imag, rreal, rimag, rreal2, rimag2);
-					// goto end;
+					printf("for 0x%lx + 0x%lxi: \nccosh = 0x%lx + 0x%lxi != \n_ccosh = 0x%lx + 0x%lxi\n", 
+						temp_real, temp_imag, rreal, rimag, rreal2, rimag2);
+					goto end;
 				} else {
 					suc_cnt++;
 				}
