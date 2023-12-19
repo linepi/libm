@@ -57,7 +57,7 @@ static void ccosh_path2(double complex in, double complex *res)
     double sinh_res[2];
     double sincos_res[4];
 
-    cosh_ret = _libm_cosh_k64(x, (double complex *)cosh_res);
+    cosh_ret = __libm_cosh_k64(x, cosh_res);
     t0 = t5 = cosh_res[0];
     t4 = cosh_res[1];
     t5 += t4;
@@ -72,7 +72,7 @@ static void ccosh_path2(double complex in, double complex *res)
     cosh_res[1] = t5;
 
     if (x_exp >= 0x337) {
-        ebp = _libm_sinh_k64(x, (double complex *)sinh_res);
+        ebp = __libm_sinh_k64(x, sinh_res);
         t5 = sinh_res[1];
     } else {
         t0 = x * UINT64_TO_DOUBLE(ccosh_const4);
@@ -146,6 +146,10 @@ static void ccosh_path2(double complex in, double complex *res)
                    (double complex *)(sincos_res + 2), &res_x);
     _libm_mul_k64(ebp + ebx, (double complex *)sinh_res,
                    (double complex *)sincos_res, &res_y);
+    // __libm_mul_k64(cosh_ret, cosh_res,
+    //             (sincos_res + 2), &res_x);
+    // __libm_mul_k64(ebp + ebx, sinh_res,
+    //                sincos_res, &res_y);
     *res = res_x + res_y * I;
 }
 

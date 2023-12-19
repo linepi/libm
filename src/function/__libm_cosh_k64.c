@@ -426,10 +426,12 @@ int __libm_cosh_k64(double input,double* result){
                 result[0] = Asdouble(rax);
                 result[1] = xmm3;
             }
+            eax = 0;
         }
     }
     else{
         //printf("else:eax<0x4150\n");
+        eax = 0;
         result[0] = 0.0;
         result[1] = 0.0;
     }
