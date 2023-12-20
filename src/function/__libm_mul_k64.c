@@ -12,7 +12,7 @@ uint16_t HIWORD_copy(double* value) {
     return result;
 }
 //取高位双字（4Byte），返回原指针
-uint32_t HIDWORD_pri(double* value)
+uint32_t* HIDWORD_pri(double* value)
 {
     uint32_t* bytePtr = (uint32_t*)value;
     return (uint32_t*)(bytePtr + 1);
@@ -25,7 +25,7 @@ uint32_t HIDWORD_copy(double* value)
     return result;
 }
 //取低位双字，返回原指针
-uint32_t LODWORD_pri(double* value)
+uint32_t* LODWORD_pri(double* value)
 {
     return (uint32_t*)value;
 }

@@ -9,3 +9,5 @@
 #define DOUBLE_32to51(d) ((DOUBLE_UINT64(d) >> (32U)) & 0xfffff)
 #define UINT64_TO_DOUBLE(u) (*(double *)(&(u)))
 #define DOUBLE_UINT64(d) (*(uint64_t *)(&(d)))
+
+#define FLOAT_UINT32(f) (*(uint32_t *)(&(f)))

@@ -1,6 +1,9 @@
-LIB = src/function/ccosh.c src/function/__libm_cosh_k64.c src/function/__libm_sinh_k64.c src/common.c
+LIB = src/function/ccosh.c src/function/__libm_cosh_k64.c \
+	src/function/__libm_sinh_k64.c src/common.c \
+	src/function/ccoshf.c
+
 LIB_OBJ = $(addprefix build/, $(patsubst src/%.c, %.o, $(LIB))) build/function/__libm_mul_k64.o 
-EXE_SRC = src/play.c src/main.c 
+EXE_SRC = src/play.c src/ccosh_t.c src/ccoshf_t.c
 CC = icc -fp-model precise -no-ftz -g -Isrc/inc
 
 EXE = $(addprefix build/_, $(notdir $(basename $(EXE_SRC))))
